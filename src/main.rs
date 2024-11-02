@@ -21,19 +21,29 @@ impl<T> Block<T> {
         Default::default()
     }
 
-    pub fn allocate<F>(&mut self, closure: F) -> &T
+    pub fn allocate<F>(&mut self, closure: F) -> Result<&T, &str>
     where
         F: FnOnce() -> T,
     {
         for slot in self.values.iter_mut() {
             if slot.is_none() {
                 *slot = Some(closure());
-                return slot.as_ref().unwrap()
+                return Ok(slot.as_ref().unwrap());
             }
         }
 
-        panic!("out of memory");
+        Err("out of memory")
+    }
+
+    pub fn free(&mut self, slot: usize) -> Result<(), &str> {
+        if slot >= self.values.len() {
+            Err("invalid slot")
+        } else {
+            self.values[slot] = None;
+            Ok(())
+        }
     }
 }
 
-fn main() { }
+fn main() {
+}
